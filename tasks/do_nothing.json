@@ -1,0 +1,11 @@
+{
+  "description": "Does nothing with a script",
+  "input_method": "stdin",
+  "parameters": {
+    "inert": {
+       "description": "Useless parameter that does nothing except stop Puppet Strings from crashing",
+       "type": "Optional[Any]"
+    }
+  }
+
+}

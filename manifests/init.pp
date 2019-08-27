@@ -1,0 +1,2 @@
+# Does nothing
+class inert { }

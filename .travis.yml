@@ -137,7 +137,8 @@ jobs:
             condition: '($SKIP_GITHUB_PUBLISH != true)'
         - provider: script
           script:
-            - 'git add Gemfile.lock && git commit -m "Persist Gemfile.lock during ''git clean''"'
+            - 'git add Gemfile.lock'
+            - 'git commit -m "Persist Gemfile.lock during ''git clean''"'
             - 'git clean -f -x -d'
             - 'bundle exec puppet module build'
             - 'curl -sS --fail -A "$FORGE_USER_AGENT"

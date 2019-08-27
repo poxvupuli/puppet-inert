@@ -76,49 +76,49 @@ stages:
 
 jobs:
   include:
-    - stage: check
-      name: 'Syntax, style, and validation checks'
-      rvm: 2.4.5
-      env: PUPPET_VERSION="~> 5"
-      script:
-        - bundle exec rake validate
-        - bundle exec rake lint
-        - bundle exec puppet module build
-
-    - stage: spec
-      rvm: 2.4.5
-      name: 'Puppet 5.5 (PE 2018.1)'
-      env: PUPPET_VERSION="~> 5.5.0"
-      script:
-        - bundle exec rake spec
-
-    - stage: spec
-      name: 'Latest Puppet 5.x'
-      rvm: 2.4.5
-      env: PUPPET_VERSION="~> 5.0"
-      script:
-        - bundle exec rake spec
-
-    - stage: spec
-      name: 'Puppet 6.0 (PE 2019.0)'
-      rvm: 2.5.3
-      env: PUPPET_VERSION="~> 6.0.0"
-      script:
-        - bundle exec rake spec
-
-    - stage: spec
-      name: 'Puppet 6.4 (PE 2019.1)'
-      rvm: 2.5.3
-      env: PUPPET_VERSION="~> 6.4.0"
-      script:
-        - bundle exec rake spec
-
-    - stage: spec
-      name: 'Latest Puppet 6.x'
-      rvm: 2.5.3
-      env: PUPPET_VERSION="~> 6.0"
-      script:
-        - bundle exec rake spec
+    ###    - stage: check
+    ###      name: 'Syntax, style, and validation checks'
+    ###      rvm: 2.4.5
+    ###      env: PUPPET_VERSION="~> 5"
+    ###      script:
+    ###        - bundle exec rake validate
+    ###        - bundle exec rake lint
+    ###        - bundle exec puppet module build
+    ###
+    ###    - stage: spec
+    ###      rvm: 2.4.5
+    ###      name: 'Puppet 5.5 (PE 2018.1)'
+    ###      env: PUPPET_VERSION="~> 5.5.0"
+    ###      script:
+    ###        - bundle exec rake spec
+    ###
+    ###    - stage: spec
+    ###      name: 'Latest Puppet 5.x'
+    ###      rvm: 2.4.5
+    ###      env: PUPPET_VERSION="~> 5.0"
+    ###      script:
+    ###        - bundle exec rake spec
+    ###
+    ###    - stage: spec
+    ###      name: 'Puppet 6.0 (PE 2019.0)'
+    ###      rvm: 2.5.3
+    ###      env: PUPPET_VERSION="~> 6.0.0"
+    ###      script:
+    ###        - bundle exec rake spec
+    ###
+    ###    - stage: spec
+    ###      name: 'Puppet 6.4 (PE 2019.1)'
+    ###      rvm: 2.5.3
+    ###      env: PUPPET_VERSION="~> 6.4.0"
+    ###      script:
+    ###        - bundle exec rake spec
+    ###
+    ###    - stage: spec
+    ###      name: 'Latest Puppet 6.x'
+    ###      rvm: 2.5.3
+    ###      env: PUPPET_VERSION="~> 6.0"
+    ###      script:
+    ###        - bundle exec rake spec
 
     - stage: deploy
       rvm: 2.4.5
@@ -128,6 +128,9 @@ jobs:
       before_deploy:
         - "export PUPMOD_METADATA_VERSION=`ruby -r json -e \"puts JSON.parse(File.read('metadata.json')).fetch('version')\"`"
         - '[[ $TRAVIS_TAG =~ ^poxvup-${PUPMOD_METADATA_VERSION}$|^${PUPMOD_METADATA_VERSION}$ ]]'
+        - 'git add Gemfile.lock ; git commit -m "Persist Gemfile.lock during git clean"'
+        - 'git clean -f -x -d'
+        - 'bundle exec puppet module build'
       deploy:
         - provider: releases
           api_key: $GITHUB_OAUTH_TOKEN
@@ -137,10 +140,6 @@ jobs:
             condition: '($SKIP_GITHUB_PUBLISH != true)'
         - provider: script
           script:
-            - 'git add Gemfile.lock'
-            - 'git commit -m "Persist Gemfile.lock during ''git clean''"'
-            - 'git clean -f -x -d'
-            - 'bundle exec puppet module build'
             - 'curl -sS --fail -A "$FORGE_USER_AGENT"
                -H "Authorization: Bearer ${PUPPETFORGE_API_TOKEN}"
                -X POST

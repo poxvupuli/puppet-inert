@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file
 
+## 0.3.1
+
+**Breaking changes:**
+
+- None
+
+**Implemented enhancements:**
+
+- Support doing nothing on multiple OSes and Puppet versions
+
+**Closed issues:**
+
+- None
+
+**Merged pull requests:**
+
+- None
+
 ## 0.3.0
 
 **Breaking changes:**
@@ -10,7 +28,7 @@ All notable changes to this project will be documented in this file
 
 **Implemented enhancements:**
 
-- None
+- Support doing nothing with Puppet Tasks
 
 **Closed issues:**
 
@@ -29,7 +47,7 @@ All notable changes to this project will be documented in this file
 
 **Implemented enhancements:**
 
-- None
+- Do nothing with Puppet
 
 **Closed issues:**
 

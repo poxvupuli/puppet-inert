@@ -30,8 +30,8 @@ There are no requirements to do nothing.
 
 ### Beginning with inert
 
-The `inert` module doesn't do anything, so in a sense you've already been using
-while reading this sentence.  Great job!  It's probably time you got back to
+The `inert` module doesn't do anything, so in effect you already started using
+it while reading this sentence.  Great job!  It's probably time to get back to
 work, though.
 
 ## Usage
@@ -40,23 +40,13 @@ You shouldn't use it, because it's useless.
 
 ## Reference
 
-Here, include a complete list of your module's classes, types, providers,
-facts, along with the parameters for each. Users refer to this section (thus
-the name "Reference") to find specific details; most users don't read it per
-se.
+See [REFERENCE.md](https://github.com/poxvupuli/puppet-inert/blob/master/REFERENCE.md)
 
 ## Limitations
 
-This is where you list OS compatibility, version compatibility, etc. If there
-are Known Issues, you might want to include them under their own heading here.
+The module does nothing, so in a sense its limitations are infinite.
 
 ## Development
 
 Since your module is awesome, other users will want to play with it. Let them
 know what the ground rules for contributing are.
-
-## Release Notes/Contributors/Etc. **Optional**
-
-If you aren't using changelog, put your release notes here (though you should
-consider using changelog). You can also add any additional sections you feel
-are necessary or important to include here. Please use the `## ` header.

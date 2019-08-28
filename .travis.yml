@@ -131,6 +131,7 @@ jobs:
         - 'gem install -v "~> 5.5.0" puppet'
         - 'git clean -f -x -d'
         - 'puppet module build'
+      skip_cleanup: true
       deploy:
         - provider: script
           skip_cleanup: true

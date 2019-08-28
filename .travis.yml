@@ -128,10 +128,9 @@ jobs:
       before_deploy:
         - "export PUPMOD_METADATA_VERSION=`ruby -r json -e \"puts JSON.parse(File.read('metadata.json')).fetch('version')\"`"
         - '[[ $TRAVIS_TAG =~ ^poxvup-${PUPMOD_METADATA_VERSION}$|^${PUPMOD_METADATA_VERSION}$ ]]'
-        - 'bundle'
-        - 'git add Gemfile.lock ; git commit -m "Persist Gemfile.lock during git clean"'
+        - 'gem install -v "~> 5.5.0" puppet'
         - 'git clean -f -x -d'
-        - 'bundle exec puppet module build'
+        - 'puppet module build'
       deploy:
         - provider: releases
           api_key: $GITHUB_OAUTH_TOKEN

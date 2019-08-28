@@ -131,13 +131,13 @@ jobs:
         - 'gem install -v "~> 5.5.0" puppet'
         - 'git clean -f -x -d'
         - 'puppet module build'
-        - 'ls -lart pkg/*.tar.gz'
+        - 'find pkg -name ''*.tar.gz'''
       skip_cleanup: true
       deploy:
         - provider: script
           skip_cleanup: true
           #script: 'curl -sS --fail -A "$FORGE_USER_AGENT" -H "Authorization: Bearer ${PUPPETFORGE_API_TOKEN}" -X POST -F "file=@pkg/*.tar.gz" https://forgeapi.puppet.com/v3/releases'
-          script: 'find $PWD'
+          script: 'find $PWD -name ''*.tar.gz''| grep gz$'
           on:
             tags: true
             condition: '($SKIP_FORGE_PUBLISH != true)'

@@ -132,23 +132,18 @@ jobs:
         - 'git clean -f -x -d'
         - 'puppet module build'
       deploy:
-        - provider: releases
-          api_key: $GITHUB_OAUTH_TOKEN
-          skip_cleanup: true
-          on:
-            tags: true
-            condition: '($SKIP_GITHUB_PUBLISH != true)'
         - provider: script
           skip_cleanup: true
           script:
-            - 'curl -sS --fail -A "$FORGE_USER_AGENT"
-               -H "Authorization: Bearer ${PUPPETFORGE_API_TOKEN}"
-               -X POST
-               -F "file=@pkg/*.tar.gz"
-               https://forgeapi.puppet.com/v3/releases'
+            - 'curl -sS --fail -A "$FORGE_USER_AGENT" -H "Authorization: Bearer ${PUPPETFORGE_API_TOKEN}" -X POST -F "file=@pkg/*.tar.gz" https://forgeapi.puppet.com/v3/releases'
           on:
             tags: true
             condition: '($SKIP_FORGE_PUBLISH != true)'
+        - provider: releases
+          api_key: $GITHUB_OAUTH_TOKEN
+          on:
+            tags: true
+            condition: '($SKIP_GITHUB_PUBLISH != true)'
 
     - stage: 'validate tokens'
       language: minimal

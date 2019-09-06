@@ -1,6 +1,6 @@
 {
   "name": "poxvupuli-inert",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "author": "Pox Vupuli",
   "summary": "Completely inert module that does nothing",
   "license": "Apache-2.0",

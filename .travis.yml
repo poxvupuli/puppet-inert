@@ -16,8 +16,8 @@
 #   ---------------------  --------  -------------------------------------------
 #   GITHUB_OAUTH_TOKEN     Secure    Required for automated GitHub releases
 #   PUPPETFORGE_API_TOKEN  Secure    Required for automated Forge releases
-#   SKIP_GITHUB_PUBLISH    Optional  Skips publishing GitHub releases if "true"
-#   SKIP_FORGE_PUBLISH     Optional  Skips publishing to Puppet Forge if "true"
+#   SKIP_GITHUB_RELEASE    Optional  Skips releasing to GitHub if "yes"
+#   SKIP_FORGE_RELEASE     Optional  Skips releasing to Puppet Forge if "yes"
 #
 #   The secure env vars wiil be filtered in Travis CI log output, and aren't
 #   provided to untrusted builds (i.e, triggered by PR from another repository)
@@ -71,8 +71,24 @@ stages:
     if: 'NOT env(VALIDATE_TOKENS) = yes'
   - name: spec
     if: 'NOT env(VALIDATE_TOKENS) = yes'
-  - name: deploy
+  - name: release
     if: 'tag IS present AND NOT env(VALIDATE_TOKENS) = yes'
+
+_minimal_step: &_minimal_step
+  language: minimal
+  install: skip
+  before_install: skip
+
+_pre_release_checks: &_pre_release_checks
+  before_script:
+    - "export PUPMOD_METADATA_VERSION=`jq -r .version metadata.json`"
+    - 'function tag_must_match_module_version {
+        [[ $TRAVIS_TAG =~ ^poxvup-${PUPMOD_METADATA_VERSION}$|^${PUPMOD_METADATA_VERSION}$ ]] || {
+        printf "\n=== PRE-RELEASE ERROR: Puppet metadata version ''%s'' doesn''t match tag ''%s''\n\n"
+         "$PUPMOD_METADATA_VERSION" "$TRAVIS_TAG";
+         false;
+      } }'
+    - tag_must_match_module_version
 
 jobs:
   include:
@@ -120,36 +136,45 @@ jobs:
     ###      script:
     ###        - bundle exec rake spec
 
-    - stage: deploy
+    - stage: release
+      name: 'Release to GitHub'
+      if: 'NOT env(SKIP_GITHUB_RELEASE) = yes'
+      <<: *_minimal_step
+      <<: *_pre_release_checks
+      script:
+        - 'committish="$(git log --tags $TRAVIS_TAG -1 --pretty=%H)"'
+        - 'subject="$(git for-each-ref refs/tags/$TRAVIS_TAG
+             --format="%(contents:subject)" |  sed -e ''s/"/\\"/g'' |
+             perl -pe ''s/\n/\\n/g'' )"'
+        - 'body="$(git for-each-ref refs/tags/$TRAVIS_TAG
+            --format="%(contents:body)" |  sed -e ''s/"/\\"/g'' |
+            perl -pe ''s/\n/\\n/g'' )"'
+        - 'printf ''{"tag_name": "%s", "target_commitish": "%s", "name": "%s", "body": "%s", "prerelease": false}''
+            "$TRAVIS_TAG" "$committish" "$subject" "$body" > rel.json'
+        - 'curl -sS --fail -X POST -d @rel.json -A "$FORGE_USER_AGENT"
+            -H "Accept: application/vnd.github.v3+json"
+            -H "Authorization: token $GITHUB_OAUTH_TOKEN"
+              "https://api.github.com/repos/${TRAVIS_REPO_SLUG}/releases"'
+
+    - stage: release
+      name: 'Release to PuppetForge'
+      if: 'NOT env(SKIP_FORGE_RELEASE) = yes'
       rvm: 2.4.5
       env: PUPPET_VERSION="~> 5.5.0"
+      <<: *_pre_release_checks
       script:
-        - true
-      before_deploy:
-        - "export PUPMOD_METADATA_VERSION=`ruby -r json -e \"puts JSON.parse(File.read('metadata.json')).fetch('version')\"`"
-        - '[[ $TRAVIS_TAG =~ ^poxvup-${PUPMOD_METADATA_VERSION}$|^${PUPMOD_METADATA_VERSION}$ ]]'
-        - 'gem install -v "~> 5.5.0" puppet'
+        - 'set -ev'
         - 'git clean -f -x -d'
+        - 'gem install -v "$PUPPET_VERSION" puppet'
         - 'puppet module build'
         - 'find pkg -name ''*.tar.gz'''
-      skip_cleanup: true
-      deploy:
-        - provider: script
-          skip_cleanup: true
-          script: 'curl -sS --fail -A "$FORGE_USER_AGENT" -H "Authorization: Bearer ${PUPPETFORGE_API_TOKEN}" -X POST -F "file=@$(find $PWD/pkg -name ''*.tar.gz'')" https://forgeapi.puppet.com/v3/releases'
-          on:
-            tags: true
-            condition: '($SKIP_FORGE_PUBLISH != true)'
-        - provider: releases
-          api_key: $GITHUB_OAUTH_TOKEN
-          on:
-            tags: true
-            condition: '($SKIP_GITHUB_PUBLISH != true)'
+        - 'curl -sS --fail -A "$FORGE_USER_AGENT"
+           -H "Authorization: Bearer ${PUPPETFORGE_API_TOKEN}"
+           -X POST -F "file=@$(find $PWD/pkg -name ''*.tar.gz'')"
+           https://forgeapi.puppet.com/v3/releases'
 
     - stage: 'validate tokens'
-      language: minimal
-      before_install: skip
-      install: skip
+      <<: *_minimal_step
       name:  'validate CI GitHub OAuth token has sufficient scope to release'
       script:
       - 'echo; echo "===== GITHUB_OAUTH_TOKEN validation";echo "  (TRAVIS_SECURE_ENV_VARS=$TRAVIS_SECURE_ENV_VARS)"; echo'
@@ -160,9 +185,7 @@ jobs:
 
     - stage: 'validate tokens'
       name:  'validate CI Puppet Forge token authenticates with API'
-      language: minimal
-      before_install: skip
-      install: skip
+      <<: *_minimal_step
       script:
       - 'echo; echo "===== PUPPETFORGE_API_TOKEN validation"; echo "  (TRAVIS_SECURE_ENV_VARS=$TRAVIS_SECURE_ENV_VARS)"; echo'
       - 'curl -sS --fail -A "$FORGE_USER_AGENT"

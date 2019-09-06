@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file
 
+## 0.3.2
+
+**Breaking changes:**
+
+- None
+
+**Implemented enhancements:**
+
+- None
+
+**Closed issues:**
+
+- None
+
+**Merged pull requests:**
+
+- None
+
 ## 0.3.1
 
 **Breaking changes:**

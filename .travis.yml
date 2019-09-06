@@ -62,7 +62,7 @@ before_install:
 
 env:
   global:
-    - 'FORGE_USER_AGENT="TravisCI-ForgeReleng-Script/0.3.1 (Purpose/forge-ops-for-${TRAVIS_REPO_SLUG})"'
+    - 'FORGE_USER_AGENT="CI-ForgeReleng-Script/0.4.0 (Purpose/forge-ops-for-${TRAVIS_REPO_SLUG})"'
 
 stages:
   - name: 'validate tokens'
@@ -93,7 +93,7 @@ jobs:
     ###        - bundle exec rake spec
     ###
     ###    - stage: spec
-    ###      name: 'Latest Puppet 5.x'
+    ###      name: 'Puppet 5.x (Latest)'
     ###      rvm: 2.4.5
     ###      env: PUPPET_VERSION="~> 5.0"
     ###      script:
@@ -166,5 +166,5 @@ jobs:
       script:
       - 'echo; echo "===== PUPPETFORGE_API_TOKEN validation"; echo "  (TRAVIS_SECURE_ENV_VARS=$TRAVIS_SECURE_ENV_VARS)"; echo'
       - 'curl -sS --fail -A "$FORGE_USER_AGENT"
-         -H "Authorization: Bearer ${PUPPETFORGE_API_TOKEN}"
+         -H "Authorization: Bearer ${PUPPETFORGE_API_TOKEN:-default_content_to_cause_401_response}"
          https://forgeapi.puppet.com/v3/users > /dev/null'
